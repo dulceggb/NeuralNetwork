@@ -1,0 +1,57 @@
+#Proyecto Final para IA
+#Elaborado por Dulce Guadalupe Garcia Bedolla
+#Fecha
+
+#Librerías 
+import numpy as np
+import matplotlib as plt
+import matplotlib.pyplot as plt
+import pandas as pd
+
+df = pd.read_csv('datosM.csv', encoding='latin1', header=None)
+#Se separan matriz de entrada y salida
+x = df.iloc[:,[1,2,3,4,5,6,8]]
+y = df.iloc[:,[7]]  #se consideran salidas
+
+from sklearn.impute import SimpleImputer
+imputer = SimpleImputer(missing_values= np.nan , strategy='mean')
+#Calificaciones faltantes
+imputer = imputer.fit(df.iloc[:,[7]])
+df.iloc[:,[7]]=imputer.transform(df.iloc[:,[7]])
+#Hora de clases
+imputer = imputer.fit(df.iloc[:,[8]])
+df.iloc[:,[8]]=imputer.transform(df.iloc[:,[8]])
+
+
+x = df.iloc[:,[1,2,3,4,5,6,8]].values
+y = df.iloc[:,[7]].values  #se consideran salidas
+
+
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+labelencoder_X_1 = LabelEncoder() #Transforma los string a  numeros 
+x[:,0] = labelencoder_X_1.fit_transform(x[:,0]) 
+x[:,1] = labelencoder_X_1.fit_transform(x[:,1]) #Transforma los datos categoricos a datos numeros
+x[:,2] = labelencoder_X_1.fit_transform(x[:,2]) 
+x[:,5] = labelencoder_X_1.fit_transform(x[:,5]) 
+
+#Datos de entrenamiento y de evaluación
+from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(x,y, test_size = 0.5, random_state=0)
+
+#
+from keras.models import Sequential
+from keras.layers import Dense
+
+#Definimos modelo secuencial
+model = Sequential()
+model.add(Dense(12, input_dim=7, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+
+#Compilación del modelo
+model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+
+model.fit(x_train, y_train, batch_size=16, epochs=200)
+
+
+
